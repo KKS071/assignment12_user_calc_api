@@ -1,0 +1,61 @@
+# templates/index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 20px; }
+        input, select, button { margin: 8px 0; padding: 8px; width: 100%; box-sizing: border-box; }
+        button { background: #0066cc; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #0052a3; }
+        #result { margin-top: 16px; padding: 12px; background: #f0f4f8; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Calculator Demo</h1>
+
+    <label for="operation">Operation</label>
+    <select id="operation">
+        <option value="add">Add</option>
+        <option value="subtract">Subtract</option>
+        <option value="multiply">Multiply</option>
+        <option value="divide">Divide</option>
+    </select>
+
+    <label for="a">First number</label>
+    <input type="number" id="a" placeholder="e.g. 10" step="any">
+
+    <label for="b">Second number</label>
+    <input type="number" id="b" placeholder="e.g. 5" step="any">
+
+    <button onclick="calculate()">Calculate</button>
+
+    <div id="result">Result will appear here.</div>
+
+    <script>
+        async function calculate() {
+            const operation = document.getElementById('operation').value;
+            const a = parseFloat(document.getElementById('a').value);
+            const b = parseFloat(document.getElementById('b').value);
+            const resultEl = document.getElementById('result');
+
+            try {
+                const resp = await fetch('/' + operation, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ a, b }),
+                });
+                const data = await resp.json();
+                resultEl.innerText = resp.ok
+                    ? 'Result: ' + data.result
+                    : 'Error: ' + data.error;
+            } catch (err) {
+                resultEl.innerText = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
