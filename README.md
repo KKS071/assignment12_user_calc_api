@@ -1,264 +1,268 @@
-# 📦 Project Setup
+# Assignment 12 — User & Calculation API
+
+[![CI](https://github.com/KKS071/assignment12_user_calc_api/actions/workflows/ci.yml/badge.svg)](https://github.com/KKS071/assignment12_user_calc_api/actions)
+[![Docker](https://img.shields.io/docker/v/kks59/601_module12?label=Docker%20Hub)](https://hub.docker.com/r/kks59/601_module12)
 
 ---
 
-# 🧩 1. Install Homebrew (Mac Only)
+## Project Overview
 
-> Skip this step if you're on Windows.
+This project is a production-ready REST API built with **FastAPI**, **SQLAlchemy**, and **PostgreSQL**. It demonstrates:
 
-Homebrew is a package manager for macOS.  
-You’ll use it to easily install Git, Python, Docker, etc.
+- **User registration & login** with JWT authentication (access + refresh tokens)
+- **Calculation CRUD** (BREAD — Browse, Read, Edit, Add, Delete) for four arithmetic operations
+- **Integration and unit tests** with 100 % coverage via `pytest` + `pytest-cov`
+- **CI/CD pipeline** via GitHub Actions (test → Docker build & push)
+- **Docker deployment** with Docker Compose (app + Postgres + pgAdmin)
 
-**Install Homebrew:**
+**Repositories**
 
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-**Verify Homebrew:**
-
-```bash
-brew --version
-```
-
-If you see a version number, you're good to go.
+| Resource | URL |
+|---|---|
+| GitHub | https://github.com/KKS071/assignment12_user_calc_api |
+| Docker Hub | https://hub.docker.com/r/kks59/601_module12 |
 
 ---
 
-# 🧩 2. Install and Configure Git
+## Project Structure
 
-## Install Git
-
-- **MacOS (using Homebrew)**
-
-```bash
-brew install git
 ```
-
-- **Windows**
-
-Download and install [Git for Windows](https://git-scm.com/download/win).  
-Accept the default options during installation.
-
-**Verify Git:**
-
-```bash
-git --version
-```
-
----
-
-## Configure Git Globals
-
-Set your name and email so Git tracks your commits properly:
-
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "your_email@example.com"
-```
-
-Confirm the settings:
-
-```bash
-git config --list
-```
-
----
-
-## Generate SSH Keys and Connect to GitHub
-
-> Only do this once per machine.
-
-1. Generate a new SSH key:
-
-```bash
-ssh-keygen -t ed25519 -C "your_email@example.com"
-```
-
-(Press Enter at all prompts.)
-
-2. Start the SSH agent:
-
-```bash
-eval "$(ssh-agent -s)"
-```
-
-3. Add the SSH private key to the agent:
-
-```bash
-ssh-add ~/.ssh/id_ed25519
-```
-
-4. Copy your SSH public key:
-
-- **Mac/Linux:**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | pbcopy
-```
-
-- **Windows (Git Bash):**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | clip
-```
-
-5. Add the key to your GitHub account:
-   - Go to [GitHub SSH Settings](https://github.com/settings/keys)
-   - Click **New SSH Key**, paste the key, save.
-
-6. Test the connection:
-
-```bash
-ssh -T git@github.com
-```
-
-You should see a success message.
-
----
-
-# 🧩 3. Clone the Repository
-
-Now you can safely clone the course project:
-
-```bash
-git clone <repository-url>
-cd <repository-directory>
+.
+├── app/
+│   ├── main.py                 # FastAPI app, all routes
+│   ├── database.py             # SQLAlchemy engine & session
+│   ├── database_init.py        # create_all / drop_all helpers
+│   ├── operations.py           # Pure arithmetic functions
+│   ├── auth/
+│   │   ├── dependencies.py     # get_current_user / get_current_active_user
+│   │   ├── jwt.py              # Token creation, password hashing
+│   │   └── redis.py            # Optional token blacklisting
+│   ├── core/
+│   │   └── config.py           # Pydantic settings
+│   ├── models/
+│   │   ├── user.py             # User SQLAlchemy model
+│   │   └── calculation.py      # Calculation model (polymorphic)
+│   └── schemas/
+│       ├── base.py             # UserBase, PasswordMixin, UserCreate, UserLogin
+│       ├── user.py             # Full user schemas with password validation
+│       ├── calculation.py      # Calculation schemas
+│       └── token.py            # Token schemas
+├── tests/
+│   ├── conftest.py             # Fixtures (DB, server, Faker)
+│   ├── unit/
+│   │   └── test_calculator.py  # Unit tests for operations.py
+│   ├── integration/
+│   │   ├── test_calculation.py
+│   │   ├── test_calculation_schema.py
+│   │   ├── test_database.py
+│   │   ├── test_dependencies.py
+│   │   ├── test_schema_base.py
+│   │   ├── test_user.py
+│   │   └── test_user_auth.py
+│   └── test_fastapi_calculator.py  # End-to-end tests vs live server
+├── templates/
+│   └── index.html              # Simple calculator UI
+├── Dockerfile
+├── docker-compose.yml
+├── pytest.ini
+├── requirements.txt
+└── .github/
+    └── workflows/
+        └── ci.yml
 ```
 
 ---
 
-# 🛠️ 4. Install Python 3.10+
+## Running Locally
 
-## Install Python
+### Prerequisites
 
-- **MacOS (Homebrew)**
+- Python 3.10+
+- PostgreSQL running locally (or use Docker Compose)
 
-```bash
-brew install python
-```
-
-- **Windows**
-
-Download and install [Python for Windows](https://www.python.org/downloads/).  
-✅ Make sure you **check the box** `Add Python to PATH` during setup.
-
-**Verify Python:**
+### 1 — Install dependencies
 
 ```bash
-python3 --version
-```
-or
-```bash
-python --version
-```
-
----
-
-## Create and Activate a Virtual Environment
-
-(Optional but recommended)
-
-```bash
-python3 -m venv venv
-source venv/bin/activate   # Mac/Linux
-venv\Scripts\activate.bat  # Windows
-```
-
-### Install Required Packages
-
-```bash
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
----
+### 2 — Configure environment
 
-# 🐳 5. (Optional) Docker Setup
+Create a `.env` file (or export variables):
 
-> Skip if Docker isn't used in this module.
-
-## Install Docker
-
-- [Install Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)
-- [Install Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
-
-## Build Docker Image
-
-```bash
-docker build -t <image-name> .
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fastapi_db
+JWT_SECRET_KEY=your-super-secret-key-change-this-in-production
+JWT_REFRESH_SECRET_KEY=your-refresh-secret-key-change-this-in-production
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+BCRYPT_ROUNDS=12
 ```
 
-## Run Docker Container
+### 3 — Run the server
 
 ```bash
-docker run -it --rm <image-name>
+uvicorn app.main:app --reload
+```
+
+The API is now available at `http://127.0.0.1:8000`.
+
+### 4 — View interactive docs
+
+| UI | URL |
+|---|---|
+| Swagger / OpenAPI | http://127.0.0.1:8000/docs |
+| ReDoc | http://127.0.0.1:8000/redoc |
+
+### 5 — Run tests with coverage
+
+```bash
+# Unit + integration tests (fast, no live server)
+pytest -m "not slow" --cov=app --cov-report=term-missing
+
+# All tests including slow bulk tests
+pytest --run-slow
+
+# End-to-end tests (starts a live server automatically)
+pytest tests/test_fastapi_calculator.py
 ```
 
 ---
 
-# 🚀 6. Running the Project
+## API Endpoints
 
-- **Without Docker**:
+### Auth
 
-```bash
-python main.py
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/auth/register` | Register a new user |
+| `POST` | `/auth/login` | Login — returns JWT tokens |
+| `POST` | `/auth/token` | OAuth2 form login (Swagger UI) |
+
+### Calculations (requires `Authorization: Bearer <token>`)
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/calculations` | Create a calculation |
+| `GET` | `/calculations` | List your calculations |
+| `GET` | `/calculations/{id}` | Get a calculation by ID |
+| `PUT` | `/calculations/{id}` | Update calculation inputs |
+| `DELETE` | `/calculations/{id}` | Delete a calculation |
+
+**Supported types:** `addition`, `subtraction`, `multiplication`, `division`
+
+**Example request:**
+
+```json
+POST /calculations
+{
+  "type": "addition",
+  "inputs": [10.5, 3, 2]
+}
 ```
 
-(or update this if the main script is different.)
+**Example response:**
 
-- **With Docker**:
-
-```bash
-docker run -it --rm <image-name>
+```json
+{
+  "id": "...",
+  "user_id": "...",
+  "type": "addition",
+  "inputs": [10.5, 3.0, 2.0],
+  "result": 15.5,
+  "created_at": "...",
+  "updated_at": "..."
+}
 ```
 
 ---
 
-# 📝 7. Submission Instructions
+## Docker
 
-After finishing your work:
+### Build and run with Docker Compose
 
 ```bash
-git add .
-git commit -m "Complete Module X"
-git push origin main
+docker compose up --build
 ```
 
-Then submit the GitHub repository link as instructed.
+This starts:
+- **web** — FastAPI on port 8000
+- **db** — PostgreSQL 17 on port 5432
+- **pgadmin** — pgAdmin 4 on port 5050 (`admin@example.com` / `admin`)
+
+### Pull from Docker Hub
+
+```bash
+docker pull kks59/601_module12:latest
+docker run -p 8000:8000 \
+  -e DATABASE_URL=postgresql://... \
+  -e JWT_SECRET_KEY=... \
+  kks59/601_module12:latest
+```
 
 ---
 
-# 🔥 Useful Commands Cheat Sheet
+## CI/CD Pipeline
 
-| Action                         | Command                                          |
-| ------------------------------- | ------------------------------------------------ |
-| Install Homebrew (Mac)          | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
-| Install Git                     | `brew install git` or Git for Windows installer |
-| Configure Git Global Username  | `git config --global user.name "Your Name"`      |
-| Configure Git Global Email     | `git config --global user.email "you@example.com"` |
-| Clone Repository                | `git clone <repo-url>`                          |
-| Create Virtual Environment     | `python3 -m venv venv`                           |
-| Activate Virtual Environment   | `source venv/bin/activate` / `venv\Scripts\activate.bat` |
-| Install Python Packages        | `pip install -r requirements.txt`               |
-| Build Docker Image              | `docker build -t <image-name> .`                |
-| Run Docker Container            | `docker run -it --rm <image-name>`               |
-| Push Code to GitHub             | `git add . && git commit -m "message" && git push` |
+The `.github/workflows/ci.yml` workflow runs on every push and pull request to `main`:
+
+1. **Test job** — spins up a Postgres 17 service container, installs dependencies, and runs `pytest` with coverage.
+2. **Docker job** (runs only on `main` after tests pass) — builds the Docker image and pushes it to Docker Hub using `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets.
+
+```
+Push to main
+    │
+    ▼
+┌──────────┐      pass      ┌────────────────────┐
+│  pytest  │ ─────────────► │  docker build+push │
+│  + cov   │                │  → Docker Hub      │
+└──────────┘                └────────────────────┘
+```
+
+### Required GitHub Secrets
+
+| Secret | Purpose |
+|---|---|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
 
 ---
 
-# 📋 Notes
+## Screenshots
 
-- Install **Homebrew** first on Mac.
-- Install and configure **Git** and **SSH** before cloning.
-- Use **Python 3.10+** and **virtual environments** for Python projects.
-- **Docker** is optional depending on the project.
+### GitHub Actions — CI passing
+
+> _Add a screenshot of the GitHub Actions workflow run showing all checks green._
+
+![GitHub Actions Success](screenshots/github_actions_success.png)
+
+### Swagger UI — Working endpoints
+
+> _Add a screenshot of the Swagger UI at `/docs` showing the endpoints._
+
+![Swagger UI](screenshots/swagger_ui.png)
 
 ---
 
-# 📎 Quick Links
+## Reflection
 
-- [Homebrew](https://brew.sh/)
-- [Git Downloads](https://git-scm.com/downloads)
-- [Python Downloads](https://www.python.org/downloads/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [GitHub SSH Setup Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+> **What I learned from this assignment:**
+
+1. **FastAPI & SQLAlchemy** — Building RESTful endpoints backed by a relational database with clean model/schema separation.
+2. **JWT Authentication** — Implementing stateless auth with access and refresh tokens and bcrypt password hashing.
+3. **pytest & coverage** — Writing unit, integration, and end-to-end tests that together achieve 100 % code coverage.
+4. **CI/CD with GitHub Actions** — Automating the test-then-deploy workflow so every push is validated and the Docker image is always up to date.
+5. **Docker** — Containerising the application and its dependencies for consistent, reproducible deployments.
+6. **Pydantic v2 validation** — Using model validators to enforce password strength, confirm-password matching, and input constraints at the schema layer.
+
+> **Challenges I faced:**
+
+- _Describe any issues you ran into and how you resolved them._
+
+> **What I would improve with more time:**
+
+- _Add email verification flow_
+- _Add rate limiting_
+- _Implement token blacklisting with Redis_
