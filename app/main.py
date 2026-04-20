@@ -187,11 +187,12 @@ def update_calculation(
     current_user=Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    """Update the inputs of an existing calculation and recompute the result."""
+    """Update the type and/or inputs of an existing calculation and recompute the result."""
     try:
         calc_uuid = UUID(calc_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid calculation id format.")
+
     calc = db.query(Calculation).filter(
         Calculation.id == calc_uuid,
         Calculation.user_id == current_user.id,
@@ -199,9 +200,25 @@ def update_calculation(
     if not calc:
         raise HTTPException(status_code=404, detail="Calculation not found.")
 
+    # Apply updates — type and/or inputs may change independently
+    if payload.type is not None:
+        calc.type = payload.type.value
     if payload.inputs is not None:
         calc.inputs = payload.inputs
-        calc.result = calc.get_result()
+
+    # Recompute whenever either field changed
+    if payload.type is not None or payload.inputs is not None:
+        try:
+            # Re-instantiate the correct subclass so get_result() dispatches properly
+            updated = Calculation.create(
+                calculation_type=calc.type,
+                user_id=calc.user_id,
+                inputs=calc.inputs,
+            )
+            calc.result = updated.get_result()
+        except ValueError as e:
+            db.rollback()
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     db.commit()
     db.refresh(calc)
