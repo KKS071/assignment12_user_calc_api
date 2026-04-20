@@ -149,7 +149,7 @@ pytest tests/e2e/test_fastapi_calculator.py
 | `POST` | `/calculations` | Create a calculation |
 | `GET` | `/calculations` | List your calculations |
 | `GET` | `/calculations/{id}` | Get a calculation by ID |
-| `PUT` | `/calculations/{id}` | Update calculation inputs |
+| `PUT` | `/calculations/{id}` | Update calculation inputs & type |
 | `DELETE` | `/calculations/{id}` | Delete a calculation |
 
 **Supported types:** `addition`, `subtraction`, `multiplication`, `division`
