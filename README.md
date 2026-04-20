@@ -11,8 +11,8 @@ This project is a production-ready REST API built with **FastAPI**, **SQLAlchemy
 
 - **User registration & login** with JWT authentication (access + refresh tokens)
 - **Calculation CRUD** (BREAD — Browse, Read, Edit, Add, Delete) for four arithmetic operations
-- **Integration and unit tests** with 100 % coverage via `pytest` + `pytest-cov`
-- **CI/CD pipeline** via GitHub Actions (test → Docker build & push)
+- **Integration and unit tests** via `pytest` + `pytest-cov`
+- **CI/CD pipeline** via GitHub Actions (test → vulnerability scan → Docker build & push)
 - **Docker deployment** with Docker Compose (app + Postgres + pgAdmin)
 
 **Repositories**
@@ -59,7 +59,8 @@ This project is a production-ready REST API built with **FastAPI**, **SQLAlchemy
 │   │   ├── test_schema_base.py
 │   │   ├── test_user.py
 │   │   └── test_user_auth.py
-│   └── test_fastapi_calculator.py  # End-to-end tests vs live server
+│   └── e2e/
+│       └── test_fastapi_calculator.py  # End-to-end tests vs live server
 ├── templates/
 │   └── index.html              # Simple calculator UI
 ├── Dockerfile
@@ -126,7 +127,7 @@ pytest -m "not slow" --cov=app --cov-report=term-missing
 pytest --run-slow
 
 # End-to-end tests (starts a live server automatically)
-pytest tests/test_fastapi_calculator.py
+pytest tests/e2e/test_fastapi_calculator.py
 ```
 
 ---
@@ -141,7 +142,7 @@ pytest tests/test_fastapi_calculator.py
 | `POST` | `/auth/login` | Login — returns JWT tokens |
 | `POST` | `/auth/token` | OAuth2 form login (Swagger UI) |
 
-### Calculations (requires `Authorization: Bearer <token>`)
+### BREAD Calculations (requires `Authorization: Bearer <token>`)
 
 | Method | Path | Description |
 |---|---|---|
@@ -229,40 +230,3 @@ Push to main
 | `DOCKERHUB_TOKEN` | Docker Hub access token |
 
 ---
-
-## Screenshots
-
-### GitHub Actions — CI passing
-
-> _Add a screenshot of the GitHub Actions workflow run showing all checks green._
-
-![GitHub Actions Success](screenshots/github_actions_success.png)
-
-### Swagger UI — Working endpoints
-
-> _Add a screenshot of the Swagger UI at `/docs` showing the endpoints._
-
-![Swagger UI](screenshots/swagger_ui.png)
-
----
-
-## Reflection
-
-> **What I learned from this assignment:**
-
-1. **FastAPI & SQLAlchemy** — Building RESTful endpoints backed by a relational database with clean model/schema separation.
-2. **JWT Authentication** — Implementing stateless auth with access and refresh tokens and bcrypt password hashing.
-3. **pytest & coverage** — Writing unit, integration, and end-to-end tests that together achieve 100 % code coverage.
-4. **CI/CD with GitHub Actions** — Automating the test-then-deploy workflow so every push is validated and the Docker image is always up to date.
-5. **Docker** — Containerising the application and its dependencies for consistent, reproducible deployments.
-6. **Pydantic v2 validation** — Using model validators to enforce password strength, confirm-password matching, and input constraints at the schema layer.
-
-> **Challenges I faced:**
-
-- _Describe any issues you ran into and how you resolved them._
-
-> **What I would improve with more time:**
-
-- _Add email verification flow_
-- _Add rate limiting_
-- _Implement token blacklisting with Redis_
